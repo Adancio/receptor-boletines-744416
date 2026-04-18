@@ -35,18 +35,26 @@ jobs:
 
       - name: Deploy en EC2
         uses: appleboy/ssh-action@v1.0.0
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_SESSION_TOKEN
           script: |
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            export AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 910039462201.dkr.ecr.us-east-1.amazonaws.com
-            docker pull 910039462201.dkr.ecr.us-east-1.amazonaws.com/receptor-boletines-744416:${{ github.sha }}
-            docker stop receptor || true
-            docker rm receptor || true
-            docker run -d --name receptor \
-              -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-              -e AWS_SESSION_TOKEN=${{ secrets.AWS_SESSION_TOKEN }} \
+            docker pull 910039462201.dkr.ecr.us-east-1.amazonaws.com/emisor-boletines-744416:${{ github.sha }}
+            docker stop emisor || true
+            docker rm emisor || true
+            docker run -d --name emisor -p 8000:8000 \
+              -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+              -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+              -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
               -e AWS_DEFAULT_REGION=us-east-1 \
-              910039462201.dkr.ecr.us-east-1.amazonaws.com/receptor-boletines-744416:${{ github.sha }}
+              910039462201.dkr.ecr.us-east-1.amazonaws.com/emisor-boletines-744416:${{ github.sha }}
