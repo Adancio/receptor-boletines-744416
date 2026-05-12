@@ -4,7 +4,7 @@ import ast
 import time
 from botocore.exceptions import BotoCoreError, ClientError
 
-expediente = "744416"
+expediente = "7444166"
 
 sqs = boto3.client("sqs", region_name="us-east-1")
 dynamodb = boto3.resource("dynamodb", region_name="us-east-1")
